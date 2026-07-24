@@ -16,6 +16,15 @@ message Request {
         RemoveLayerRequest remove_layer = 10;
         RestoreLayerRequest restore_layer = 11;
         SetLayerPropsRequest set_layer_props = 12;
+        // CODEKEEB PATCH: read/write sensor (encoder) rotation bindings.
+        // Upstream ZMK/Studio has no equivalent -- sensor-bindings are
+        // compile-time only, and get_keymap's response never included
+        // them. Kept as separate requests (rather than folded into
+        // get_keymap/Layer) so the upstream get_keymap handler in
+        // app/src/studio/keymap_subsystem.c doesn't need to change --
+        // this whole feature stays a self-contained addition.
+        bool get_sensor_bindings = 99;
+        SetSensorBindingRequest set_sensor_binding = 100;
     }
 }
 
@@ -33,6 +42,9 @@ message Response {
         RemoveLayerResponse remove_layer = 10;
         RestoreLayerResponse restore_layer = 11;
         SetLayerPropsResponse set_layer_props = 12;
+        // CODEKEEB PATCH: see get_sensor_bindings/set_sensor_binding above.
+        GetSensorBindingsResponse get_sensor_bindings = 99;
+        SetSensorBindingResponse set_sensor_binding = 100;
     }
 }
 
@@ -61,6 +73,24 @@ enum SetLayerBindingResponse {
     SET_LAYER_BINDING_RESP_INVALID_LOCATION = 1;
     SET_LAYER_BINDING_RESP_INVALID_BEHAVIOR = 2;
     SET_LAYER_BINDING_RESP_INVALID_PARAMETERS = 3;
+}
+
+// CODEKEEB PATCH: sensor (encoder) rotation binding write support.
+message SetSensorBindingRequest {
+    uint32 layer_id = 1;
+    uint32 sensor_index = 2;
+    // true = clockwise binding, false = counter-clockwise binding.
+    bool clockwise = 3;
+
+    BehaviorBinding binding = 4;
+}
+
+enum SetSensorBindingResponse {
+    SET_SENSOR_BINDING_RESP_OK = 0;
+    SET_SENSOR_BINDING_RESP_INVALID_LOCATION = 1;
+    SET_SENSOR_BINDING_RESP_INVALID_BEHAVIOR = 2;
+    SET_SENSOR_BINDING_RESP_INVALID_PARAMETERS = 3;
+    SET_SENSOR_BINDING_RESP_NOT_SUPPORTED = 4;
 }
 
 message SetActivePhysicalLayoutResponse {
@@ -189,6 +219,22 @@ message BehaviorBinding {
     sint32 behavior_id = 1;
     uint32 param1 = 2;
     uint32 param2 = 3;
+}
+
+// CODEKEEB PATCH: one entry per (layer, physical sensor) pair that has a
+// runtime-editable rotation binding (see set_sensor_binding), each
+// holding both its clockwise and counter-clockwise binding. Returned by
+// get_sensor_bindings; upstream ZMK never exposed sensor-bindings over
+// Studio in any form.
+message SensorBinding {
+    uint32 layer_id = 1;
+    uint32 sensor_index = 2;
+    BehaviorBinding clockwise = 3;
+    BehaviorBinding counter_clockwise = 4;
+}
+
+message GetSensorBindingsResponse {
+    repeated SensorBinding sensor_bindings = 1;
 }
 
 message PhysicalLayouts {
