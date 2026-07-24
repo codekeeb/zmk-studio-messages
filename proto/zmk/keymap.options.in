@@ -1,1 +1,6 @@
 zmk.keymap.SetLayerPropsRequest.name max_size:@CONFIG_ZMK_KEYMAP_LAYER_NAME_MAX_LEN@ fixed_length:true
+# CODEKEEB PATCH: macro step blob. 5 bytes per step (1 type + 4 value),
+# sized from the firmware's own slot limit so both sides always agree.
+# 32 steps max x 5 bytes = 160; the firmware clamps to its own
+# ZMK_DMAC_MAX_STEPS, so this is just the wire ceiling.
+zmk.keymap.SetMacroRequest.steps max_size:160

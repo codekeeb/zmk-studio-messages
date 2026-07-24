@@ -25,6 +25,10 @@ message Request {
         // this whole feature stays a self-contained addition.
         bool get_sensor_bindings = 99;
         SetSensorBindingRequest set_sensor_binding = 100;
+        // CODEKEEB PATCH: runtime-editable macro slots (&dmac).
+        bool get_macros = 101;
+        SetMacroRequest set_macro = 102;
+        SetUnicodeModeRequest set_unicode_mode = 103;
     }
 }
 
@@ -45,6 +49,9 @@ message Response {
         // CODEKEEB PATCH: see get_sensor_bindings/set_sensor_binding above.
         GetSensorBindingsResponse get_sensor_bindings = 99;
         SetSensorBindingResponse set_sensor_binding = 100;
+        GetMacrosResponse get_macros = 101;
+        SetMacroResponse set_macro = 102;
+        SetMacroResponse set_unicode_mode = 103;
     }
 }
 
@@ -255,4 +262,48 @@ message KeyPhysicalAttrs {
     sint32 r = 5;
     sint32 rx = 6;
     sint32 ry = 7;
+}
+// CODEKEEB PATCH: runtime-editable macros. ZMK's own macros are devicetree
+// nodes fixed at build time; these slots live in flash and are authored
+// from the keymap editor.
+
+// type: 0 = tap an encoded HID keycode, 1 = emit a Unicode codepoint,
+// 2 = wait `value` milliseconds.
+message MacroStep {
+    uint32 type = 1;
+    uint32 value = 2;
+}
+
+message Macro {
+    uint32 slot = 1;
+    repeated MacroStep steps = 2;
+}
+
+// steps is a packed byte blob rather than a repeated field on purpose:
+// ZMK's RPC layer calls pb_decode() directly, with no hook to install the
+// decode callback nanopb requires for repeated fields, so a repeated field
+// would silently arrive empty. Layout: 5 bytes per step, little-endian --
+// 1 byte type, 4 bytes value.
+message SetMacroRequest {
+    uint32 slot = 1;
+    bytes steps = 2;
+}
+
+enum SetMacroResponse {
+    SET_MACRO_RESP_OK = 0;
+    SET_MACRO_RESP_INVALID_SLOT = 1;
+    SET_MACRO_RESP_TOO_LONG = 2;
+    SET_MACRO_RESP_NOT_SUPPORTED = 3;
+}
+
+// 0 = Linux (Ctrl+Shift+U), 1 = Windows/WinCompose (RAlt+U),
+// 2 = macOS (Unicode Hex Input).
+message SetUnicodeModeRequest {
+    uint32 mode = 1;
+}
+
+message GetMacrosResponse {
+    repeated Macro macros = 1;
+    uint32 unicode_mode = 2;
+    uint32 max_steps = 3;
 }
