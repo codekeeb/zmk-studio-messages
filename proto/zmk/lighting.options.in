@@ -1,0 +1,2 @@
+# CODEKEEB PATCH: nanopb options for the lighting subsystem. Nothing here
+# is dynamically sized, so no allocation settings are needed.
