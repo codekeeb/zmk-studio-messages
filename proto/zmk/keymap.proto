@@ -43,6 +43,8 @@ message Request {
         // esta pantalla la lleva la propia mitad central, asi que no
         // hace falta reenviar nada al periferico.
         uint32 set_wpm_view = 107;
+        // Deep sleep: apagado por inactividad, con el plazo en flash.
+        SetSleepRequest set_sleep = 108;
     }
 }
 
@@ -70,6 +72,7 @@ message Response {
         bool set_rgb = 105;
         bool set_animation = 106;
         bool set_wpm_view = 107;
+        bool set_sleep = 108;
     }
 }
 
@@ -355,4 +358,13 @@ message LightingState {
     bool wpm_view_available = 12;
     uint32 wpm_view = 13;
     uint32 wpm_view_count = 14;
+
+    bool sleep_available = 15;
+    bool sleep_enabled = 16;
+    uint32 sleep_minutes = 17;
+}
+
+message SetSleepRequest {
+    bool enabled = 1;
+    uint32 minutes = 2;
 }
