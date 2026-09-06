@@ -29,6 +29,15 @@ message Request {
         bool get_macros = 101;
         SetMacroRequest set_macro = 102;
         SetUnicodeModeRequest set_unicode_mode = 103;
+        // CODEKEEB PATCH: lighting (RGB + OLED animation). Upstream
+        // Studio can rewrite the keymap but cannot touch either, so the
+        // only way to change them is to press a key bound to &rgbfx or
+        // &oledanim. Kept in this subsystem, like the patches above, so
+        // ZMK's own CMakeLists (which hardcodes the list of .proto files
+        // it compiles) does not have to change.
+        bool get_lighting = 104;
+        SetRgbRequest set_rgb = 105;
+        uint32 set_animation = 106;
     }
 }
 
@@ -52,6 +61,9 @@ message Response {
         GetMacrosResponse get_macros = 101;
         SetMacroResponse set_macro = 102;
         SetMacroResponse set_unicode_mode = 103;
+        LightingState get_lighting = 104;
+        bool set_rgb = 105;
+        bool set_animation = 106;
     }
 }
 
@@ -306,4 +318,31 @@ message GetMacrosResponse {
     repeated Macro macros = 1;
     uint32 unicode_mode = 2;
     uint32 max_steps = 3;
+}
+
+/* CODEKEEB PATCH: lighting.
+ * Absolute values, each one optional, so a slider can say
+ * "brightness = 3" without stepping there one command at a time and
+ * without having to send the rest of the state back. */
+message SetRgbRequest {
+    optional bool active = 1;
+    optional uint32 brightness = 2;   // 1..brightness_max
+    optional uint32 effect = 3;       // index into the effect list
+    optional uint32 hue = 4;          // 0..359
+    optional uint32 speed = 5;        // 0..4
+}
+
+message LightingState {
+    bool rgb_available = 1;
+    bool active = 2;
+    uint32 brightness = 3;
+    uint32 brightness_max = 4;
+    uint32 effect = 5;
+    uint32 effect_count = 6;
+    uint32 hue = 7;
+    uint32 speed = 8;
+
+    bool animation_available = 9;
+    uint32 animation = 10;
+    uint32 animation_count = 11;
 }
