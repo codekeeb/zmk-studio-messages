@@ -38,6 +38,11 @@ message Request {
         bool get_lighting = 104;
         SetRgbRequest set_rgb = 105;
         uint32 set_animation = 106;
+        // Vista de WPM de la pantalla del CENTRAL (bongo cat, luna,
+        // numero, velocimetro, grafico). A diferencia de la animacion,
+        // esta pantalla la lleva la propia mitad central, asi que no
+        // hace falta reenviar nada al periferico.
+        uint32 set_wpm_view = 107;
     }
 }
 
@@ -64,6 +69,7 @@ message Response {
         LightingState get_lighting = 104;
         bool set_rgb = 105;
         bool set_animation = 106;
+        bool set_wpm_view = 107;
     }
 }
 
@@ -345,4 +351,8 @@ message LightingState {
     bool animation_available = 9;
     uint32 animation = 10;
     uint32 animation_count = 11;
+
+    bool wpm_view_available = 12;
+    uint32 wpm_view = 13;
+    uint32 wpm_view_count = 14;
 }
